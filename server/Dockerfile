@@ -11,9 +11,9 @@ RUN apt-get update && apt-get install -y \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy shared package first
-COPY shared/ /app/shared/
-RUN pip install --no-cache-dir /app/shared/
+# Copy shared package first (optional - uncomment if a shared/ package exists at repo root)
+# COPY shared/ /app/shared/
+# RUN pip install --no-cache-dir /app/shared/
 
 # Copy server package
 COPY server/pyproject.toml server/README.md /app/server/

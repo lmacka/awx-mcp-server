@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   awx-mcp-server:
     build:
@@ -7,13 +5,16 @@ services:
       dockerfile: server/Dockerfile
     container_name: awx-mcp-server
     ports:
-      - "8000:8000"
+      - "10100:8000"
     environment:
       - SERVER_HOST=0.0.0.0
       - SERVER_PORT=8000
       - LOG_LEVEL=info
       - ENABLE_METRICS=true
       - ADMIN_TOKEN=${ADMIN_TOKEN:-admin-secret-token}
+      - AWX_BASE_URL=${AWX_BASE_URL:-https://awx.example.com}
+      - AWX_TOKEN=${AWX_TOKEN:-your-awx-api-token}
+      - AWX_VERIFY_SSL=${AWX_VERIFY_SSL:-false}
     volumes:
       - awx-mcp-data:/home/awxmcp/.config/awx-mcp
     restart: unless-stopped
@@ -31,9 +32,9 @@ services:
     image: prom/prometheus:latest
     container_name: awx-mcp-prometheus
     ports:
-      - "9090:9090"
+      - "10101:9090"
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./deployment/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -48,7 +49,7 @@ services:
     image: grafana/grafana:latest
     container_name: awx-mcp-grafana
     ports:
-      - "3000:3000"
+      - "10102:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
     volumes:
