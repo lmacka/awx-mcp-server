@@ -3,7 +3,10 @@
 from abc import ABC, abstractmethod
 from typing import Any, Optional
 
-from awx_mcp_server.domain import Inventory, Job, JobEvent, JobTemplate, Project
+from awx_mcp_server.domain import (
+    Inventory, Job, JobEvent, JobTemplate, Project,
+    WorkflowJob, WorkflowJobTemplate, WorkflowNode,
+)
 
 
 class AWXClient(ABC):
@@ -100,4 +103,78 @@ class AWXClient(ABC):
         self, job_id: int, failed_only: bool = False, page: int = 1, page_size: int = 100
     ) -> list[JobEvent]:
         """Get job events."""
+        pass
+
+    # Workflow Job Templates
+
+    @abstractmethod
+    async def list_workflow_job_templates(
+        self, name_filter: Optional[str] = None, page: int = 1, page_size: int = 25
+    ) -> list[WorkflowJobTemplate]:
+        """List workflow job templates."""
+        pass
+
+    @abstractmethod
+    async def get_workflow_job_template(self, template_id: int) -> WorkflowJobTemplate:
+        """Get workflow job template by ID."""
+        pass
+
+    @abstractmethod
+    async def get_workflow_job_template_nodes(self, template_id: int) -> list[WorkflowNode]:
+        """Get workflow job template nodes (DAG)."""
+        pass
+
+    @abstractmethod
+    async def get_workflow_job_template_survey(self, template_id: int) -> dict[str, Any]:
+        """Get workflow job template survey spec."""
+        pass
+
+    @abstractmethod
+    async def get_workflow_job_template_launch_info(self, template_id: int) -> dict[str, Any]:
+        """Get workflow job template launch requirements."""
+        pass
+
+    # Workflow Jobs
+
+    @abstractmethod
+    async def list_workflow_jobs(
+        self, template_id: Optional[int] = None, status: Optional[str] = None,
+        page: int = 1, page_size: int = 25,
+    ) -> list[WorkflowJob]:
+        """List workflow jobs."""
+        pass
+
+    @abstractmethod
+    async def get_workflow_job(self, job_id: int) -> WorkflowJob:
+        """Get workflow job by ID."""
+        pass
+
+    @abstractmethod
+    async def get_workflow_job_nodes(self, job_id: int) -> list[WorkflowNode]:
+        """Get workflow job nodes (runtime state)."""
+        pass
+
+    @abstractmethod
+    async def launch_workflow(
+        self, template_id: int, extra_vars: Optional[dict[str, Any]] = None,
+        limit: Optional[str] = None, inventory: Optional[int] = None,
+    ) -> WorkflowJob:
+        """Launch workflow job template."""
+        pass
+
+    @abstractmethod
+    async def cancel_workflow_job(self, job_id: int) -> dict[str, Any]:
+        """Cancel running workflow job."""
+        pass
+
+    @abstractmethod
+    async def relaunch_workflow_job(self, job_id: int) -> WorkflowJob:
+        """Relaunch a workflow job."""
+        pass
+
+    @abstractmethod
+    async def search_unified_job_templates(
+        self, query: str, page_size: int = 25
+    ) -> list[dict[str, Any]]:
+        """Search across all template types."""
         pass

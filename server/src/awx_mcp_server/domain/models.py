@@ -158,6 +158,57 @@ class JobEvent(BaseModel):
     event_data: dict[str, Any] = Field(default_factory=dict)
 
 
+class WorkflowJobTemplate(BaseModel):
+    """AWX workflow job template."""
+
+    id: int
+    name: str
+    description: Optional[str] = None
+    organization: Optional[int] = None
+    extra_vars: dict[str, Any] = Field(default_factory=dict)
+    survey_enabled: bool = False
+    ask_limit_on_launch: bool = False
+    ask_inventory_on_launch: bool = False
+    ask_variables_on_launch: bool = False
+    limit: Optional[str] = None
+    status: Optional[str] = None
+    last_job_run: Optional[datetime] = None
+    last_job_failed: Optional[bool] = None
+
+
+class WorkflowJob(BaseModel):
+    """AWX workflow job (runtime instance)."""
+
+    id: int
+    name: str
+    status: JobStatus
+    workflow_job_template: Optional[int] = None
+    extra_vars: dict[str, Any] = Field(default_factory=dict)
+    started: Optional[datetime] = None
+    finished: Optional[datetime] = None
+    elapsed: Optional[float] = None
+    failed: bool = False
+    limit: Optional[str] = None
+
+
+class WorkflowNode(BaseModel):
+    """AWX workflow node (template or runtime)."""
+
+    id: int
+    unified_job_template_id: int
+    unified_job_template_name: str
+    unified_job_type: str
+    limit: Optional[str] = None
+    success_nodes: list[int] = Field(default_factory=list)
+    failure_nodes: list[int] = Field(default_factory=list)
+    always_nodes: list[int] = Field(default_factory=list)
+    all_parents_must_converge: bool = False
+    # Runtime fields (only populated for workflow job nodes)
+    job_id: Optional[int] = None
+    job_status: Optional[str] = None
+    do_not_run: Optional[bool] = None
+
+
 class FailureAnalysis(BaseModel):
     """Analysis of job failure."""
 

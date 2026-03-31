@@ -15,6 +15,9 @@ from awx_mcp_server.domain import (
     JobStatus,
     JobTemplate,
     Project,
+    WorkflowJob,
+    WorkflowJobTemplate,
+    WorkflowNode,
 )
 
 
@@ -321,3 +324,41 @@ class AwxkitClient(AWXClient):
             elapsed=data.get("elapsed"),
             artifacts=data.get("artifacts", {}),
         )
+
+    # Workflow stubs - not supported by awxkit CLI, REST client handles these
+
+    async def list_workflow_job_templates(self, name_filter=None, page=1, page_size=25):
+        raise NotImplementedError("Workflow operations not supported by CLI client")
+
+    async def get_workflow_job_template(self, template_id):
+        raise NotImplementedError("Workflow operations not supported by CLI client")
+
+    async def get_workflow_job_template_nodes(self, template_id):
+        raise NotImplementedError("Workflow operations not supported by CLI client")
+
+    async def get_workflow_job_template_survey(self, template_id):
+        raise NotImplementedError("Workflow operations not supported by CLI client")
+
+    async def get_workflow_job_template_launch_info(self, template_id):
+        raise NotImplementedError("Workflow operations not supported by CLI client")
+
+    async def list_workflow_jobs(self, template_id=None, status=None, page=1, page_size=25):
+        raise NotImplementedError("Workflow operations not supported by CLI client")
+
+    async def get_workflow_job(self, job_id):
+        raise NotImplementedError("Workflow operations not supported by CLI client")
+
+    async def get_workflow_job_nodes(self, job_id):
+        raise NotImplementedError("Workflow operations not supported by CLI client")
+
+    async def launch_workflow(self, template_id, extra_vars=None, limit=None, inventory=None):
+        raise NotImplementedError("Workflow operations not supported by CLI client")
+
+    async def cancel_workflow_job(self, job_id):
+        raise NotImplementedError("Workflow operations not supported by CLI client")
+
+    async def relaunch_workflow_job(self, job_id):
+        raise NotImplementedError("Workflow operations not supported by CLI client")
+
+    async def search_unified_job_templates(self, query, page_size=25):
+        raise NotImplementedError("Unified search not supported by CLI client")

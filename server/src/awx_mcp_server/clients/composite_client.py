@@ -5,7 +5,10 @@ from typing import Any, Optional
 from awx_mcp_server.clients.awxkit_client import AwxkitClient
 from awx_mcp_server.clients.base import AWXClient
 from awx_mcp_server.clients.rest_client import RestAWXClient
-from awx_mcp_server.domain import EnvironmentConfig, Inventory, Job, JobEvent, JobTemplate, Project
+from awx_mcp_server.domain import (
+    EnvironmentConfig, Inventory, Job, JobEvent, JobTemplate, Project,
+    WorkflowJob, WorkflowJobTemplate, WorkflowNode,
+)
 
 
 class CompositeAWXClient(AWXClient):
@@ -175,3 +178,51 @@ class CompositeAWXClient(AWXClient):
     ) -> list[JobEvent]:
         """Get job events - always use REST (CLI not well supported)."""
         return await self.rest_client.get_job_events(job_id, failed_only, page, page_size)
+
+    # Workflow operations - REST only (no CLI support)
+
+    async def list_workflow_job_templates(
+        self, name_filter: Optional[str] = None, page: int = 1, page_size: int = 25
+    ) -> list[WorkflowJobTemplate]:
+        return await self.rest_client.list_workflow_job_templates(name_filter, page, page_size)
+
+    async def get_workflow_job_template(self, template_id: int) -> WorkflowJobTemplate:
+        return await self.rest_client.get_workflow_job_template(template_id)
+
+    async def get_workflow_job_template_nodes(self, template_id: int) -> list[WorkflowNode]:
+        return await self.rest_client.get_workflow_job_template_nodes(template_id)
+
+    async def get_workflow_job_template_survey(self, template_id: int) -> dict[str, Any]:
+        return await self.rest_client.get_workflow_job_template_survey(template_id)
+
+    async def get_workflow_job_template_launch_info(self, template_id: int) -> dict[str, Any]:
+        return await self.rest_client.get_workflow_job_template_launch_info(template_id)
+
+    async def list_workflow_jobs(
+        self, template_id: Optional[int] = None, status: Optional[str] = None,
+        page: int = 1, page_size: int = 25,
+    ) -> list[WorkflowJob]:
+        return await self.rest_client.list_workflow_jobs(template_id, status, page, page_size)
+
+    async def get_workflow_job(self, job_id: int) -> WorkflowJob:
+        return await self.rest_client.get_workflow_job(job_id)
+
+    async def get_workflow_job_nodes(self, job_id: int) -> list[WorkflowNode]:
+        return await self.rest_client.get_workflow_job_nodes(job_id)
+
+    async def launch_workflow(
+        self, template_id: int, extra_vars: Optional[dict[str, Any]] = None,
+        limit: Optional[str] = None, inventory: Optional[int] = None,
+    ) -> WorkflowJob:
+        return await self.rest_client.launch_workflow(template_id, extra_vars, limit, inventory)
+
+    async def cancel_workflow_job(self, job_id: int) -> dict[str, Any]:
+        return await self.rest_client.cancel_workflow_job(job_id)
+
+    async def relaunch_workflow_job(self, job_id: int) -> WorkflowJob:
+        return await self.rest_client.relaunch_workflow_job(job_id)
+
+    async def search_unified_job_templates(
+        self, query: str, page_size: int = 25
+    ) -> list[dict[str, Any]]:
+        return await self.rest_client.search_unified_job_templates(query, page_size)
