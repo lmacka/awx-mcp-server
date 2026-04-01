@@ -18,11 +18,15 @@
 10. [Job Execution](#10-job-execution)
 11. [Job Monitoring](#11-job-monitoring)
 12. [Job Diagnostics](#12-job-diagnostics)
-13. [Playbook Development](#13-playbook-development)
-14. [Role Development](#14-role-development)
-15. [Project Registry](#15-project-registry)
-16. [Git / SCM Integration](#16-git--scm-integration)
-17. [Dev-to-AWX Workflow](#17-dev-to-awx-workflow)
+13. [Workflow Templates](#13-workflow-templates)
+14. [Workflow Jobs](#14-workflow-jobs)
+15. [Workflow Node Management](#15-workflow-node-management)
+16. [Unified Search](#16-unified-search)
+17. [Playbook Development](#17-playbook-development)
+18. [Role Development](#18-role-development)
+19. [Project Registry](#19-project-registry)
+20. [Git / SCM Integration](#20-git--scm-integration)
+21. [Dev-to-AWX Workflow](#21-dev-to-awx-workflow)
 
 ---
 
@@ -156,6 +160,20 @@ create a job template named "Deploy App" with inventory 1, project 1, playbook "
 create template "Backup DB" using project 2, inventory 1, playbook "backup.yml", job type "run"
 ```
 
+### Get Template (`awx_job_template_get`)
+```
+get job template 193
+show details for template 193
+get AWX template with ID 5
+```
+
+### Get Template Launch Info (`awx_job_template_launch_info`)
+```
+what does template 193 need to launch
+show launch requirements for template 5
+what variables does template 1 prompt for
+```
+
 ### Delete Template (`awx_template_delete`)
 ```
 delete template 5
@@ -179,6 +197,13 @@ show projects page 1 with 10 per page
 ```
 create project "My App" in organization 1 with git SCM and URL "https://github.com/user/repo.git"
 create AWX project "Infra" in org 1, SCM type git, URL "https://github.com/org/infra.git", branch "main"
+```
+
+### Get Project (`awx_project_get`)
+```
+get project 201
+show details for project 201
+what SCM is project 5 using
 ```
 
 ### Delete Project (`awx_project_delete`)
@@ -211,6 +236,13 @@ show inventories page 2
 ```
 create inventory "Staging Servers" in organization 1
 create AWX inventory "Production" in org 1 with description "Production hosts"
+```
+
+### Get Inventory (`awx_inventory_get`)
+```
+get inventory 12
+show details for inventory 12
+how many hosts in inventory 5
 ```
 
 ### Delete Inventory (`awx_inventory_delete`)
@@ -377,7 +409,166 @@ help me fix job 7 error
 
 ---
 
-## 13. Playbook Development
+## 13. Workflow Templates
+
+### List Workflow Templates (`awx_workflow_templates_list`)
+```
+list workflow templates
+show AWX workflows
+list workflows filtered by "Deploy"
+what workflow templates are available
+```
+
+### Get Workflow Template (`awx_workflow_template_get`)
+```
+get workflow template 159
+show details for workflow 159
+what does workflow 274 do
+```
+
+### Get Workflow DAG (`awx_workflow_template_nodes`)
+```
+show workflow 159 nodes
+show the DAG for workflow 274
+what steps are in workflow 159
+show the flow for workflow template 159
+```
+
+### Get Workflow Survey (`awx_workflow_template_survey`)
+```
+show survey for workflow 159
+what variables does workflow 159 ask for
+get workflow 274 survey spec
+```
+
+### Get Workflow Launch Info (`awx_workflow_template_launch_info`)
+```
+what does workflow 159 need to launch
+show launch requirements for workflow 274
+can workflow 159 launch without input
+```
+
+### Copy Workflow Template (`awx_workflow_template_copy`)
+```
+copy workflow 274 as "Test Workflow"
+duplicate workflow template 159
+clone workflow 274 with name "My Copy"
+```
+
+### Delete Workflow Template (`awx_workflow_template_delete`)
+```
+delete workflow template 357
+remove workflow 100
+```
+
+---
+
+## 14. Workflow Jobs
+
+### List Workflow Jobs (`awx_workflow_jobs_list`)
+```
+list workflow jobs
+show recent workflow runs
+show failed workflow jobs
+list workflow runs for template 159
+show workflow job history
+```
+
+### Get Workflow Job (`awx_workflow_job_get`)
+```
+get workflow job 8647
+check status of workflow job 9222
+show details for workflow run 8647
+```
+
+### Get Workflow Job Nodes (`awx_workflow_job_nodes`)
+```
+show nodes for workflow job 8647
+what ran in workflow job 9218
+show per-node status for workflow run 8647
+```
+
+### Launch Workflow (`awx_workflow_launch`)
+```
+launch workflow 159
+run workflow 159 limited to "webserver01.example.com"
+launch workflow 274 with extra vars {"env": "test"}
+```
+
+### Cancel Workflow Job (`awx_workflow_job_cancel`)
+```
+cancel workflow job 9222
+stop workflow run 9227
+abort workflow job 9218
+```
+
+### Relaunch Workflow Job (`awx_workflow_job_relaunch`)
+```
+relaunch workflow job 8647
+rerun workflow job 9218
+retry workflow run 8639
+```
+
+### Workflow Failure Analysis (`awx_workflow_job_failure_summary`)
+```
+why did workflow job 9218 fail
+analyze workflow failure 8639
+diagnose workflow job 9218
+what went wrong with workflow run 8577
+```
+
+---
+
+## 15. Workflow Node Management
+
+### Create Node (`awx_workflow_node_create`)
+```
+add template 193 as a node in workflow 357
+create a node in workflow 274 running template 269 with limit "webservers"
+add a step to workflow 357 using job template 203
+```
+
+### Update Node (`awx_workflow_node_update`)
+```
+update node 139 limit to "webservers"
+change node 135 to require all parents converge
+set inventory override on node 130 to inventory 12
+```
+
+### Delete Node (`awx_workflow_node_delete`)
+```
+delete workflow node 139
+remove node 134 from the workflow
+```
+
+### Add Edge (`awx_workflow_node_add_edge`)
+```
+add success edge from node 135 to node 139
+connect node 130 to node 131 on failure
+add always edge from node 136 to node 137
+```
+
+### Remove Edge (`awx_workflow_node_remove_edge`)
+```
+remove success edge from node 135 to node 139
+disconnect node 130 from node 131 failure edge
+remove always edge from node 136 to node 137
+```
+
+---
+
+## 16. Unified Search
+
+### Search All Templates (`awx_templates_search`)
+```
+search templates for "Deploy"
+find templates matching "deploy"
+search for "bootstrap" across all template types
+```
+
+---
+
+## 17. Playbook Development
 
 ### Create Playbook (`create_playbook`)
 ```
@@ -443,7 +634,7 @@ show inventory from hosts.yml
 
 ---
 
-## 14. Role Development
+## 18. Role Development
 
 ### Create Role Structure (`create_role_structure`)
 ```
@@ -473,7 +664,7 @@ show all local roles
 
 ---
 
-## 15. Project Registry
+## 19. Project Registry
 
 ### Register Project (`register_project`)
 ```
@@ -522,7 +713,7 @@ run project my-app playbook install.yml limited to "webservers"
 
 ---
 
-## 16. Git / SCM Integration
+## 20. Git / SCM Integration
 
 ### Push to Git (`git_push_project`)
 ```
@@ -538,7 +729,7 @@ publish my changes
 
 ---
 
-## 17. Dev-to-AWX Workflow
+## 21. Dev-to-AWX Workflow
 
 These multi-step workflows demonstrate the full development cycle:
 
@@ -678,6 +869,30 @@ list projects and show templates for project 1
 | `awx_job_stdout` | Diagnostics | View job console output/logs |
 | `awx_job_events` | Diagnostics | View job events/tasks |
 | `awx_job_failure_summary` | Diagnostics | Analyze job failure with fix suggestions |
+| `awx_job_template_get` | Templates | Get job template by ID |
+| `awx_job_template_launch_info` | Templates | Get job template launch requirements |
+| `awx_inventory_get` | Inventories | Get inventory by ID |
+| `awx_project_get` | Projects | Get project by ID |
+| `awx_workflow_templates_list` | Workflows | List workflow job templates |
+| `awx_workflow_template_get` | Workflows | Get workflow template by ID |
+| `awx_workflow_template_nodes` | Workflows | Get workflow DAG (node topology) |
+| `awx_workflow_template_survey` | Workflows | Get workflow survey spec |
+| `awx_workflow_template_launch_info` | Workflows | Get workflow launch requirements |
+| `awx_workflow_template_copy` | Workflows | Copy/duplicate a workflow template |
+| `awx_workflow_template_delete` | Workflows | Delete a workflow template |
+| `awx_workflow_jobs_list` | Workflow Jobs | List workflow job runs |
+| `awx_workflow_job_get` | Workflow Jobs | Get workflow job details |
+| `awx_workflow_job_nodes` | Workflow Jobs | Get per-node runtime status |
+| `awx_workflow_launch` | Workflow Jobs | Launch a workflow template |
+| `awx_workflow_job_cancel` | Workflow Jobs | Cancel a running workflow job |
+| `awx_workflow_job_relaunch` | Workflow Jobs | Relaunch a workflow job |
+| `awx_workflow_job_failure_summary` | Workflow Jobs | Analyze workflow failure per-node |
+| `awx_workflow_node_create` | Workflow Nodes | Add a node to a workflow template |
+| `awx_workflow_node_update` | Workflow Nodes | Update node properties |
+| `awx_workflow_node_delete` | Workflow Nodes | Remove a node from a workflow |
+| `awx_workflow_node_add_edge` | Workflow Nodes | Add success/failure/always edge |
+| `awx_workflow_node_remove_edge` | Workflow Nodes | Remove an edge between nodes |
+| `awx_templates_search` | Search | Search across all template types |
 | `create_playbook` | Playbook Dev | Create Ansible playbook from YAML |
 | `validate_playbook` | Playbook Dev | Validate playbook syntax (--syntax-check) |
 | `ansible_playbook` | Playbook Dev | Execute playbook locally |

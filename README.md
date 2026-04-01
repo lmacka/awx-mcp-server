@@ -25,7 +25,7 @@ The AWX MCP Server connects **AWX**, **Ansible Automation Platform (AAP)**, and 
 - ✅ Industry standard pattern (STDIO transport)
 - ✅ Simple installation: `pip install git+https://github.com/USERNAME/awx-mcp-server.git`
 - ✅ Portable across all MCP-compatible tools
-- ✅ 18+ AWX operations (templates, jobs, projects, inventories)
+- ✅ 40+ AWX operations (templates, jobs, workflows, projects, inventories)
 
 **Best For**: AI-powered automation, natural language AWX control, any MCP client
 

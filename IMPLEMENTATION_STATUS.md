@@ -7,7 +7,7 @@
 - ✅ VS Code configuration with secrets
 - ✅ Multiple environment support (dev/staging/prod)
 - ✅ Environment switching via MCP server selection
-- ✅ All 49 AWX + Ansible tools available
+- ✅ All 73 AWX + Ansible tools available (including workflow management)
 - ✅ Complete documentation
 
 **Status:** Production Ready
