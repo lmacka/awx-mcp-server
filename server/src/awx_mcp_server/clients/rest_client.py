@@ -876,6 +876,97 @@ class RestAWXClient(AWXClient):
         data = await self._request("GET", "/api/v2/unified_job_templates/", params=params)
         return data.get("results", [])
 
+    # Workflow template management
+
+    async def copy_workflow_job_template(
+        self, template_id: int, name: str
+    ) -> WorkflowJobTemplate:
+        """Copy a workflow job template."""
+        data = await self._request(
+            "POST", f"/api/v2/workflow_job_templates/{template_id}/copy/",
+            json={"name": name},
+        )
+        return self._parse_workflow_job_template(data)
+
+    async def delete_workflow_job_template(self, template_id: int) -> None:
+        """Delete a workflow job template."""
+        await self.client.request("DELETE", f"/api/v2/workflow_job_templates/{template_id}/")
+
+    # Workflow node CRUD
+
+    async def create_workflow_node(
+        self,
+        workflow_template_id: int,
+        unified_job_template_id: int,
+        limit: Optional[str] = None,
+        extra_data: Optional[dict[str, Any]] = None,
+        inventory: Optional[int] = None,
+        all_parents_must_converge: bool = False,
+    ) -> WorkflowNode:
+        """Create a workflow node in a workflow template."""
+        payload: dict[str, Any] = {
+            "workflow_job_template": workflow_template_id,
+            "unified_job_template": unified_job_template_id,
+            "all_parents_must_converge": all_parents_must_converge,
+        }
+        if limit:
+            payload["limit"] = limit
+        if extra_data:
+            payload["extra_data"] = extra_data
+        if inventory:
+            payload["inventory"] = inventory
+
+        data = await self._request("POST", "/api/v2/workflow_job_template_nodes/", json=payload)
+        return self._parse_workflow_node(data)
+
+    async def update_workflow_node(
+        self,
+        node_id: int,
+        limit: Optional[str] = None,
+        extra_data: Optional[dict[str, Any]] = None,
+        inventory: Optional[int] = None,
+        all_parents_must_converge: Optional[bool] = None,
+    ) -> WorkflowNode:
+        """Update a workflow node."""
+        payload: dict[str, Any] = {}
+        if limit is not None:
+            payload["limit"] = limit
+        if extra_data is not None:
+            payload["extra_data"] = extra_data
+        if inventory is not None:
+            payload["inventory"] = inventory
+        if all_parents_must_converge is not None:
+            payload["all_parents_must_converge"] = all_parents_must_converge
+
+        data = await self._request("PATCH", f"/api/v2/workflow_job_template_nodes/{node_id}/", json=payload)
+        return self._parse_workflow_node(data)
+
+    async def delete_workflow_node(self, node_id: int) -> None:
+        """Delete a workflow node."""
+        await self.client.request("DELETE", f"/api/v2/workflow_job_template_nodes/{node_id}/")
+
+    async def add_workflow_node_edge(
+        self, node_id: int, target_node_id: int, edge_type: str
+    ) -> None:
+        """Add an edge between workflow nodes. edge_type: success_nodes, failure_nodes, always_nodes."""
+        response = await self.client.request(
+            "POST", f"/api/v2/workflow_job_template_nodes/{node_id}/{edge_type}/",
+            json={"id": target_node_id},
+        )
+        if response.status_code >= 400:
+            raise AWXClientError(f"Failed to add edge: HTTP {response.status_code}")
+
+    async def remove_workflow_node_edge(
+        self, node_id: int, target_node_id: int, edge_type: str
+    ) -> None:
+        """Remove an edge between workflow nodes."""
+        response = await self.client.request(
+            "POST", f"/api/v2/workflow_job_template_nodes/{node_id}/{edge_type}/",
+            json={"id": target_node_id, "disassociate": True},
+        )
+        if response.status_code >= 400:
+            raise AWXClientError(f"Failed to remove edge: HTTP {response.status_code}")
+
     # Workflow parsing helpers
 
     def _parse_workflow_job_template(self, data: dict[str, Any]) -> WorkflowJobTemplate:

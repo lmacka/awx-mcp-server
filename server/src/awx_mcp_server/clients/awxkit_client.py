@@ -362,3 +362,27 @@ class AwxkitClient(AWXClient):
 
     async def search_unified_job_templates(self, query, page_size=25):
         raise NotImplementedError("Unified search not supported by CLI client")
+
+    async def copy_workflow_job_template(self, template_id, name):
+        raise NotImplementedError("Workflow operations not supported by CLI client")
+
+    async def delete_workflow_job_template(self, template_id):
+        raise NotImplementedError("Workflow operations not supported by CLI client")
+
+    async def create_workflow_node(self, workflow_template_id, unified_job_template_id,
+                                   limit=None, extra_data=None, inventory=None,
+                                   all_parents_must_converge=False):
+        raise NotImplementedError("Workflow operations not supported by CLI client")
+
+    async def update_workflow_node(self, node_id, limit=None, extra_data=None,
+                                   inventory=None, all_parents_must_converge=None):
+        raise NotImplementedError("Workflow operations not supported by CLI client")
+
+    async def delete_workflow_node(self, node_id):
+        raise NotImplementedError("Workflow operations not supported by CLI client")
+
+    async def add_workflow_node_edge(self, node_id, target_node_id, edge_type):
+        raise NotImplementedError("Workflow operations not supported by CLI client")
+
+    async def remove_workflow_node_edge(self, node_id, target_node_id, edge_type):
+        raise NotImplementedError("Workflow operations not supported by CLI client")

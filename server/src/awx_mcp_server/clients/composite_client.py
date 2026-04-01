@@ -226,3 +226,30 @@ class CompositeAWXClient(AWXClient):
         self, query: str, page_size: int = 25
     ) -> list[dict[str, Any]]:
         return await self.rest_client.search_unified_job_templates(query, page_size)
+
+    async def copy_workflow_job_template(self, template_id, name):
+        return await self.rest_client.copy_workflow_job_template(template_id, name)
+
+    async def delete_workflow_job_template(self, template_id):
+        return await self.rest_client.delete_workflow_job_template(template_id)
+
+    async def create_workflow_node(self, workflow_template_id, unified_job_template_id,
+                                   limit=None, extra_data=None, inventory=None,
+                                   all_parents_must_converge=False):
+        return await self.rest_client.create_workflow_node(
+            workflow_template_id, unified_job_template_id, limit, extra_data,
+            inventory, all_parents_must_converge)
+
+    async def update_workflow_node(self, node_id, limit=None, extra_data=None,
+                                   inventory=None, all_parents_must_converge=None):
+        return await self.rest_client.update_workflow_node(
+            node_id, limit, extra_data, inventory, all_parents_must_converge)
+
+    async def delete_workflow_node(self, node_id):
+        return await self.rest_client.delete_workflow_node(node_id)
+
+    async def add_workflow_node_edge(self, node_id, target_node_id, edge_type):
+        return await self.rest_client.add_workflow_node_edge(node_id, target_node_id, edge_type)
+
+    async def remove_workflow_node_edge(self, node_id, target_node_id, edge_type):
+        return await self.rest_client.remove_workflow_node_edge(node_id, target_node_id, edge_type)

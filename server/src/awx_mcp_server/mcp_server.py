@@ -856,6 +856,99 @@ def create_mcp_server(tenant_id: Optional[str] = None) -> Server:
                 "required": ["template_id"],
             },
         ),
+        # ── Workflow Template Management ──
+        Tool(
+            name="awx_workflow_template_copy",
+            description="Copy/duplicate a workflow job template including all nodes and edges.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "template_id": {"type": "number", "description": "Source workflow job template ID to copy"},
+                    "name": {"type": "string", "description": "Name for the new copy"},
+                },
+                "required": ["template_id", "name"],
+            },
+        ),
+        Tool(
+            name="awx_workflow_template_delete",
+            description="Delete a workflow job template.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "template_id": {"type": "number", "description": "Workflow job template ID to delete"},
+                },
+                "required": ["template_id"],
+            },
+        ),
+        # ── Workflow Node CRUD ──
+        Tool(
+            name="awx_workflow_node_create",
+            description="Add a new node (step) to a workflow template. The node references a job template or workflow template to run.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "workflow_template_id": {"type": "number", "description": "Workflow job template ID to add the node to"},
+                    "unified_job_template_id": {"type": "number", "description": "Job template or workflow template ID this node should run"},
+                    "limit": {"type": "string", "description": "Host limit pattern for this node"},
+                    "extra_data": {"type": "object", "description": "Extra variables override for this node"},
+                    "inventory": {"type": "number", "description": "Inventory ID override for this node"},
+                    "all_parents_must_converge": {"type": "boolean", "description": "If true, all parent nodes must complete before this runs (default: false)"},
+                },
+                "required": ["workflow_template_id", "unified_job_template_id"],
+            },
+        ),
+        Tool(
+            name="awx_workflow_node_update",
+            description="Update a workflow node's properties (limit, extra_data, inventory, convergence).",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "node_id": {"type": "number", "description": "Workflow node ID"},
+                    "limit": {"type": "string", "description": "Host limit pattern"},
+                    "extra_data": {"type": "object", "description": "Extra variables override"},
+                    "inventory": {"type": "number", "description": "Inventory ID override"},
+                    "all_parents_must_converge": {"type": "boolean", "description": "Require all parents to converge"},
+                },
+                "required": ["node_id"],
+            },
+        ),
+        Tool(
+            name="awx_workflow_node_delete",
+            description="Remove a node from a workflow template. Also removes all edges to/from this node.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "node_id": {"type": "number", "description": "Workflow node ID to delete"},
+                },
+                "required": ["node_id"],
+            },
+        ),
+        Tool(
+            name="awx_workflow_node_add_edge",
+            description="Add an edge (relationship) between two workflow nodes. Controls execution flow.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "from_node_id": {"type": "number", "description": "Source node ID"},
+                    "to_node_id": {"type": "number", "description": "Target node ID"},
+                    "edge_type": {"type": "string", "description": "Edge type", "enum": ["success_nodes", "failure_nodes", "always_nodes"]},
+                },
+                "required": ["from_node_id", "to_node_id", "edge_type"],
+            },
+        ),
+        Tool(
+            name="awx_workflow_node_remove_edge",
+            description="Remove an edge (relationship) between two workflow nodes.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "from_node_id": {"type": "number", "description": "Source node ID"},
+                    "to_node_id": {"type": "number", "description": "Target node ID"},
+                    "edge_type": {"type": "string", "description": "Edge type", "enum": ["success_nodes", "failure_nodes", "always_nodes"]},
+                },
+                "required": ["from_node_id", "to_node_id", "edge_type"],
+            },
+        ),
         # ── Local Ansible Development Tools ──
         Tool(
             name="create_playbook",
@@ -2089,6 +2182,102 @@ def create_mcp_server(tenant_id: Optional[str] = None) -> Server:
                 if info.get("defaults", {}).get("limit"):
                     result += f"Default Limit: {info['defaults']['limit']}\n"
 
+                return [TextContent(type="text", text=result)]
+
+            # ── Workflow Template Management Handlers ──
+
+            elif name == "awx_workflow_template_copy":
+                env, client = get_active_client()
+                template_id = arguments["template_id"]
+                new_name = arguments["name"]
+                async with client:
+                    tmpl = await client.copy_workflow_job_template(template_id, new_name)
+
+                result = f"Workflow template copied successfully\n\n"
+                result += f"New ID: {tmpl.id}\n"
+                result += f"Name: {tmpl.name}\n"
+
+                return [TextContent(type="text", text=result)]
+
+            elif name == "awx_workflow_template_delete":
+                env, client = get_active_client()
+                template_id = arguments["template_id"]
+                async with client:
+                    await client.delete_workflow_job_template(template_id)
+
+                return [TextContent(type="text", text=f"Workflow template {template_id} deleted.")]
+
+            # ── Workflow Node CRUD Handlers ──
+
+            elif name == "awx_workflow_node_create":
+                env, client = get_active_client()
+                async with client:
+                    node = await client.create_workflow_node(
+                        workflow_template_id=arguments["workflow_template_id"],
+                        unified_job_template_id=arguments["unified_job_template_id"],
+                        limit=arguments.get("limit"),
+                        extra_data=arguments.get("extra_data"),
+                        inventory=arguments.get("inventory"),
+                        all_parents_must_converge=arguments.get("all_parents_must_converge", False),
+                    )
+
+                result = f"Workflow node created\n\n"
+                result += f"Node ID: {node.id}\n"
+                result += f"Template: {node.unified_job_template_name}\n"
+                if node.limit:
+                    result += f"Limit: {node.limit}\n"
+
+                return [TextContent(type="text", text=result)]
+
+            elif name == "awx_workflow_node_update":
+                env, client = get_active_client()
+                node_id = arguments["node_id"]
+                async with client:
+                    node = await client.update_workflow_node(
+                        node_id=node_id,
+                        limit=arguments.get("limit"),
+                        extra_data=arguments.get("extra_data"),
+                        inventory=arguments.get("inventory"),
+                        all_parents_must_converge=arguments.get("all_parents_must_converge"),
+                    )
+
+                result = f"Workflow node {node_id} updated\n\n"
+                result += f"Template: {node.unified_job_template_name}\n"
+                if node.limit:
+                    result += f"Limit: {node.limit}\n"
+
+                return [TextContent(type="text", text=result)]
+
+            elif name == "awx_workflow_node_delete":
+                env, client = get_active_client()
+                node_id = arguments["node_id"]
+                async with client:
+                    await client.delete_workflow_node(node_id)
+
+                return [TextContent(type="text", text=f"Workflow node {node_id} deleted.")]
+
+            elif name == "awx_workflow_node_add_edge":
+                env, client = get_active_client()
+                async with client:
+                    await client.add_workflow_node_edge(
+                        node_id=arguments["from_node_id"],
+                        target_node_id=arguments["to_node_id"],
+                        edge_type=arguments["edge_type"],
+                    )
+
+                result = f"Edge added: node {arguments['from_node_id']} --{arguments['edge_type']}--> node {arguments['to_node_id']}"
+                return [TextContent(type="text", text=result)]
+
+            elif name == "awx_workflow_node_remove_edge":
+                env, client = get_active_client()
+                async with client:
+                    await client.remove_workflow_node_edge(
+                        node_id=arguments["from_node_id"],
+                        target_node_id=arguments["to_node_id"],
+                        edge_type=arguments["edge_type"],
+                    )
+
+                result = f"Edge removed: node {arguments['from_node_id']} --{arguments['edge_type']}--> node {arguments['to_node_id']}"
                 return [TextContent(type="text", text=result)]
 
             # ── Local Ansible Development Tool Handlers ──

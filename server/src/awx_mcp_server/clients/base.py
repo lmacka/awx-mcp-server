@@ -178,3 +178,57 @@ class AWXClient(ABC):
     ) -> list[dict[str, Any]]:
         """Search across all template types."""
         pass
+
+    # Workflow template management
+
+    @abstractmethod
+    async def copy_workflow_job_template(
+        self, template_id: int, name: str
+    ) -> WorkflowJobTemplate:
+        """Copy a workflow job template."""
+        pass
+
+    @abstractmethod
+    async def delete_workflow_job_template(self, template_id: int) -> None:
+        """Delete a workflow job template."""
+        pass
+
+    # Workflow node CRUD
+
+    @abstractmethod
+    async def create_workflow_node(
+        self, workflow_template_id: int, unified_job_template_id: int,
+        limit: Optional[str] = None, extra_data: Optional[dict[str, Any]] = None,
+        inventory: Optional[int] = None, all_parents_must_converge: bool = False,
+    ) -> WorkflowNode:
+        """Create a workflow node."""
+        pass
+
+    @abstractmethod
+    async def update_workflow_node(
+        self, node_id: int, limit: Optional[str] = None,
+        extra_data: Optional[dict[str, Any]] = None,
+        inventory: Optional[int] = None,
+        all_parents_must_converge: Optional[bool] = None,
+    ) -> WorkflowNode:
+        """Update a workflow node."""
+        pass
+
+    @abstractmethod
+    async def delete_workflow_node(self, node_id: int) -> None:
+        """Delete a workflow node."""
+        pass
+
+    @abstractmethod
+    async def add_workflow_node_edge(
+        self, node_id: int, target_node_id: int, edge_type: str
+    ) -> None:
+        """Add an edge between workflow nodes."""
+        pass
+
+    @abstractmethod
+    async def remove_workflow_node_edge(
+        self, node_id: int, target_node_id: int, edge_type: str
+    ) -> None:
+        """Remove an edge between workflow nodes."""
+        pass
